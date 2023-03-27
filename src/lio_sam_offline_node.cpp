@@ -11,13 +11,14 @@
 
 #include "ouster/lidar_scan.h"
 #include "ouster/types.h"
-#include "ouster_ros/OSConfigSrv.h"
+#include "ouster_ros/GetMetadata.h"
 #include "ouster_ros/PacketMsg.h"
 #include "ouster_ros/ros.h"
 
 #include <algorithm>
 #include <chrono>
 #include <memory>
+namespace sensor = ouster::sensor;
 
 int main(int argc, char** argv)
 {
@@ -39,17 +40,16 @@ int main(int argc, char** argv)
   rosbag::Bag read_bag;
   read_bag.open(MO.readBag, rosbag::bagmode::Read);
 
-  // Get sensor metadata
-  ouster_ros::OSConfigSrv cfg{};
-  auto client = nh.serviceClient<ouster_ros::OSConfigSrv>("/os_node/os_config");
+  ouster_ros::GetMetadata metadata{};
+  auto client = nh.serviceClient<ouster_ros::GetMetadata>("get_metadata");
   client.waitForExistence();
-  if (!client.call(cfg))
-  {
-    ROS_ERROR("Calling config service failed");
-    return EXIT_FAILURE;
-  }
+    if (!client.call(metadata)) {
+      auto error_msg = "OusterCloud: Calling get_metadata service failed";
+      ROS_ERROR(error_msg);
+      return EXIT_FAILURE;
+    }
 
-  auto info = ouster::sensor::parse_metadata(cfg.response.metadata);
+  auto info = sensor::parse_metadata(metadata.response.metadata);
   uint32_t H = info.format.pixels_per_column;
   uint32_t W = info.format.columns_per_frame;
 

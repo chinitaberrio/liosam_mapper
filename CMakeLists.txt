@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   ouster_ros
 )
 
+find_package(Boost REQUIRED COMPONENTS timer)
 find_package(OpenMP REQUIRED)
 find_package(PCL REQUIRED QUIET)
 find_package(OpenCV REQUIRED QUIET)
